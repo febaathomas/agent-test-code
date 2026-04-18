@@ -1,0 +1,1 @@
+This file proves the full chain works: LangGraph Agent → AgentCore Runtime → Gateway → MCP Server → GitHub. Timestamp: 1776503607.277309
