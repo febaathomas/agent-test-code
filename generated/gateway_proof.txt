@@ -1,0 +1,1 @@
+Full chain proven: LangGraph → AgentCore Runtime → Gateway → MCP Server → GitHub App → GitHub API. Timestamp: 1776751156.2836525
