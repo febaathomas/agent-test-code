@@ -1,9 +1,11 @@
+# Terraform configuration for KAN-29: S3 bucket for application logs
 terraform {
-  required_version = ">= 1.0"
+  required_version = ">= 1.0.0"
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 4.0"
+      version = ">= 5.0"
     }
   }
 }
@@ -12,14 +14,22 @@ provider "aws" {
   region = "us-east-2"
 }
 
+# S3 bucket to store application logs
 resource "aws_s3_bucket" "app_logs" {
-  bucket = var.bucket_name
-  acl    = "private"
+  bucket = "app-logs-bucket"
 
+  # Block all public access
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+
+  # Versioning
   versioning {
     enabled = true
   }
 
+  # Server-side encryption (AES-256)
   server_side_encryption_configuration {
     rule {
       apply_server_side_encryption_by_default {
@@ -28,14 +38,9 @@ resource "aws_s3_bucket" "app_logs" {
     }
   }
 
-  tags = {
-    Environment = "dev"
-    Project     = "agent-test"
-    ManagedBy   = "terraform"
-  }
-
+  # Lifecycle rules
   lifecycle_rule {
-    id      = "log-retention"
+    id      = "transition-to-ia"
     enabled = true
 
     transition {
@@ -47,13 +52,11 @@ resource "aws_s3_bucket" "app_logs" {
       days = 90
     }
   }
-}
 
-resource "aws_s3_bucket_public_access_block" "app_logs_block" {
-  bucket = aws_s3_bucket.app_logs.id
-
-  block_public_acls   = true
-  block_public_policy = true
-  ignore_public_acls  = true
-  restrict_public_buckets = true
+  # Tags
+  tags = {
+    Environment = "dev"
+    Project     = "agent-test"
+    ManagedBy   = "terraform"
+  }
 }
