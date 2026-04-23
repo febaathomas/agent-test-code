@@ -1,47 +1,50 @@
-# Terraform configuration for KAN-29: S3 bucket for application logs
-terraform {
-  required_version = ">= 1.0.0"
-
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = ">= 5.0"
-    }
-  }
-}
-
 provider "aws" {
   region = "us-east-2"
 }
 
-# S3 bucket to store application logs
-resource "aws_s3_bucket" "app_logs" {
-  bucket = "app-logs-bucket"
+resource "aws_s3_bucket" "logs" {
+  bucket = "agent-test-logs"
 
-  # Block all public access
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-
-  # Versioning
-  versioning {
-    enabled = true
+  tags = {
+    Environment = "dev"
+    Project     = "agent-test"
+    ManagedBy   = "terraform"
   }
+}
 
-  # Server-side encryption (AES-256)
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        sse_algorithm = "AES256"
-      }
+resource "aws_s3_bucket_versioning" "logs_versioning" {
+  bucket = aws_s3_bucket.logs.id
+
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "logs_encryption" {
+  bucket = aws_s3_bucket.logs.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
     }
   }
+}
 
-  # Lifecycle rules
-  lifecycle_rule {
-    id      = "transition-to-ia"
-    enabled = true
+resource "aws_s3_bucket_public_access_block" "logs_public_access" {
+  bucket = aws_s3_bucket.logs.id
+
+  block_public_acls   = true
+  block_public_policy = true
+  ignore_public_acls  = true
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "logs_lifecycle" {
+  bucket = aws_s3_bucket.logs.id
+
+  rule {
+    id     = "log-lifecycle"
+    status = "Enabled"
 
     transition {
       days          = 30
@@ -51,12 +54,5 @@ resource "aws_s3_bucket" "app_logs" {
     expiration {
       days = 90
     }
-  }
-
-  # Tags
-  tags = {
-    Environment = "dev"
-    Project     = "agent-test"
-    ManagedBy   = "terraform"
   }
 }
