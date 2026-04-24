@@ -9,21 +9,37 @@ terraform {
 }
 
 provider "aws" {
-  region = var.aws_region
+  region = "us-east-1"
 }
 
-variable "aws_region" {
-  description = "AWS region to deploy resources"
-  type        = string
-  default     = "us-east-1"
+resource "aws_security_group" "allow_ssh" {
+  name        = "allow_ssh"
+  description = "Allow SSH inbound traffic"
+
+  ingress {
+    description = "SSH"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 
-resource "aws_instance" "simple_ec2" {
+resource "aws_instance" "example" {
   ami           = data.aws_ami.amazon_linux.id
   instance_type = "t2.micro"
 
+  vpc_security_group_ids = [aws_security_group.allow_ssh.id]
+
   tags = {
-    Name = "simple-ec2"
+    Name = "KAN-31-ec2"
   }
 }
 
