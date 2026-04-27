@@ -1,9 +1,8 @@
 terraform {
-  required_version = ">= 1.0"
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = ">= 5.0"
+      version = "~> 5.0"
     }
   }
 }
@@ -12,7 +11,6 @@ provider "aws" {
   region = "us-east-1"
 }
 
-# Get the latest Amazon Linux 2 AMI
 data "aws_ami" "amazon_linux" {
   most_recent = true
   owners      = ["amazon"]
@@ -29,9 +27,4 @@ resource "aws_instance" "example" {
   tags = {
     Name = "KAN-31-ec2"
   }
-}
-
-output "instance_id" {
-  description = "The ID of the EC2 instance"
-  value       = aws_instance.example.id
 }
