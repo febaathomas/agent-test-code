@@ -1,4 +1,5 @@
 terraform {
+  required_version = ">= 1.0"
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -11,20 +12,27 @@ provider "aws" {
   region = "us-east-1"
 }
 
+variable "environment" {
+  description = "Environment name"
+  type        = string
+  default     = "dev"
+}
+
 data "aws_ami" "amazon_linux" {
   most_recent = true
   owners      = ["amazon"]
+
   filter {
     name   = "name"
     values = ["amzn2-ami-hvm-*-x86_64-gp2"]
   }
 }
 
-resource "aws_instance" "example" {
+resource "aws_instance" "simple_ec2" {
   ami           = data.aws_ami.amazon_linux.id
   instance_type = "t2.micro"
 
   tags = {
-    Name = "KAN-31-ec2"
+    Name = "simple-ec2-${var.environment}"
   }
 }
