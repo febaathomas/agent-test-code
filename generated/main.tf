@@ -20,7 +20,7 @@ variable "aws_region" {
 
 resource "aws_instance" "example" {
   ami           = data.aws_ami.amazon_linux.id
-  instance_type = "t"  # placeholder
+  instance_type = "t2.micro"
 
   tags = {
     Name = "example-ec2"
