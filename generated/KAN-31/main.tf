@@ -1,8 +1,4 @@
-# Summary: create an ec2 instance on aws with minimum basic requirements
-# Description: Just need a simple ec2 instance running on amazon linux
-
 terraform {
-  required_version = ">= 1.0"
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -21,15 +17,6 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
-resource "aws_instance" "example" {
-  ami           = data.aws_ami.amazon_linux.id
-  instance_type = "t2.micro"
-
-  tags = {
-    Name = "KAN-31-EC2"
-  }
-}
-
 data "aws_ami" "amazon_linux" {
   most_recent = true
   owners      = ["amazon"]
@@ -37,5 +24,14 @@ data "aws_ami" "amazon_linux" {
   filter {
     name   = "name"
     values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+  }
+}
+
+resource "aws_instance" "simple" {
+  ami           = data.aws_ami.amazon_linux.id
+  instance_type = "t2.micro"
+
+  tags = {
+    Name = "simple-ec2"
   }
 }
